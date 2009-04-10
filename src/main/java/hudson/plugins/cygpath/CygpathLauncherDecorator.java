@@ -45,7 +45,7 @@ import java.util.Map;
 @Extension
 public class CygpathLauncherDecorator extends LauncherDecorator {
     public Launcher decorate(final Launcher base, Node node) {
-        if(base.isUnix())   return base;    // no decoration
+        if(base.isUnix())   return base;    // no decoration on Unix
 
         return new Launcher(base) {
             @Override
