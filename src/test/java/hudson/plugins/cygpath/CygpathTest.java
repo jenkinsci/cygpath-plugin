@@ -26,6 +26,7 @@ public class CygpathTest extends HudsonTestCase {
     public void testOnCygwin() throws Exception {
         if(!Hudson.isWindows())  return; // can't test
 
+        hudson.getDescriptorByType(Shell.DescriptorImpl.class).setShell("/bin/sh");
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new Shell("echo abc"));
         assertBuildStatusSuccess(p.scheduleBuild2(0).get());
