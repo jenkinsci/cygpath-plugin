@@ -74,7 +74,7 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     if(base.launch(new String[]{"cygpath","-w",exe},new String[0],out,null).join()==0)
                         // replace by the converted path
-                        cmds[0] = out.toString();
+                        cmds[0] = out.toString().trim();
                 } catch (InterruptedException e) {
                     // handle the interrupt later
                     Thread.currentThread().interrupt();
