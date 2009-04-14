@@ -2,6 +2,7 @@ package hudson.plugins.cygpath;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
+import hudson.model.FreeStyleBuild;
 import hudson.tasks.Shell;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -29,7 +30,8 @@ public class CygpathTest extends HudsonTestCase {
         hudson.getDescriptorByType(Shell.DescriptorImpl.class).setShell("/bin/sh");
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new Shell("echo abc"));
-        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
-        // TODO: assert that the path is converted to Windows style
+        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        // verify that a conversion happened
+        assertLogContains("cygwin",b);
     }
 }
