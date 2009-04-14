@@ -4,6 +4,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.FreeStyleBuild;
 import hudson.tasks.Shell;
+import hudson.tasks.BatchFile;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
@@ -33,5 +34,17 @@ public class CygpathTest extends HudsonTestCase {
         FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         // verify that a conversion happened
         assertLogContains("cygwin",b);
+    }
+
+    /**
+     * Verify that it doesn't interact with CreateProcess call that already uses Windows style path.
+     */
+    public void testNoInterference() throws Exception {
+        if(!Hudson.isWindows())  return; // can't test
+
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new BatchFile("echo abc"));
+        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        System.out.println(b.getLog());
     }
 }
