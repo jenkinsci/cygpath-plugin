@@ -49,6 +49,11 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
 
         return new Launcher(base) {
             @Override
+            public boolean isUnix() {
+                return base.isUnix();
+            }
+
+            @Override
             public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
                 return base.launch(cygpath(cmd),env,in,out,workDir);
             }
