@@ -9,15 +9,9 @@
   </parent>
   
   <artifactId>cygpath</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Hudson Cygpath plugin</name>
   <description>Performs path conversion with cygpath</description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Cygpath+Plugin</url>
-
-  <scm>
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/cygpath-1.0</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/cygpath-1.0</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/cygpath/tags/cygpath-1.0</url>
-  </scm>
 </project>
