@@ -77,9 +77,14 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                 try {
                     String exe = cmds[0];
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    if(base.launch(new String[]{"cygpath","-w",exe},new String[0],out,null).join()==0)
+                    if(base.launch(new String[]{"cygpath","-w",exe},new String[0],out,null).join()==0) {
                         // replace by the converted path
-                        cmds[0] = out.toString().trim();
+                        String cmd = out.toString().trim();
+                        if(cmd.length()>0)
+                            // Maybe a bug in cygwin 1.7, or maybe a race condition that I'm not aware of yet,
+                            // but until I get around to investigate that, I'm putting this defensive check
+                            cmds[0] = cmd;
+                    }
                 } catch (InterruptedException e) {
                     // handle the interrupt later
                     Thread.currentThread().interrupt();
