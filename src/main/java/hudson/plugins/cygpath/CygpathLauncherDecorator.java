@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.FilePath;
+import hudson.util.IOException2;
 import hudson.remoting.Channel;
 import hudson.model.Node;
 
@@ -36,6 +37,10 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
+import java.util.List;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * If we are on Windows, convert the path of the executable via Cygwin.
@@ -51,6 +56,31 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
             @Override
             public boolean isUnix() {
                 return base.isUnix();
+            }
+
+            public Proc launch(ProcStarter starter) throws IOException {
+                // TODO: fix them once the core exposes them as public methods
+                // TODO: Use ProcStarter.copy to make a copy before edit
+                List<String> cmds;
+                try {
+                    Field f = starter.getClass().getDeclaredField("commands");
+                    f.setAccessible(true);
+                    cmds = (List<String>)f.get(starter);
+
+                    starter.cmds(cygpath(cmds.toArray(new String[cmds.size()])));
+
+                    Method m = Launcher.class.getDeclaredMethod("launch", ProcStarter.class);
+                    m.setAccessible(true);
+                    return (Proc)m.invoke(base,starter);
+                } catch (NoSuchMethodException e) {
+                    throw new NoSuchMethodError(e.getMessage());
+                } catch (IllegalAccessException e) {
+                    throw new IllegalAccessError(e.getMessage());
+                } catch (InvocationTargetException e) {
+                    throw new IOException2(e);
+                } catch (NoSuchFieldException e) {
+                    throw new NoSuchFieldError(e.getMessage());
+                }
             }
 
             @Override
