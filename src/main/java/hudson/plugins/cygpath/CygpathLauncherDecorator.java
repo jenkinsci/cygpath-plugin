@@ -30,8 +30,12 @@ import hudson.LauncherDecorator;
 import hudson.Proc;
 import hudson.model.Node;
 import hudson.remoting.Channel;
+import hudson.util.IOException2;
+import hudson.util.jna.JnaException;
+import hudson.util.jna.RegistryKey;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -70,11 +74,27 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                 base.kill(modelEnvVars);
             }
 
+            /**
+             * Where is Cygwin installed?
+             */
+            private File getCygwinRoot() throws IOException {
+                try {
+                    RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/");
+                    try {
+                        return new File(key.getStringValue("native"));
+                    } finally {
+                        key.dispose();
+                    }
+                } catch (JnaException e) {
+                    throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",e);
+                }
+            }
+
             private String[] cygpath(String[] cmds) throws IOException {
                 try {
                     String exe = cmds[0];
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    if(base.launch().cmds("cygpath","-w",exe).stdout(out).join()==0) {
+                    if(base.launch().cmds(new File(getCygwinRoot(),"bin\\cygpath"),"-w",exe).stdout(out).join()==0) {
                         // replace by the converted path
                         String cmd = out.toString().trim();
                         if(cmd.length()>0)
