@@ -23,24 +23,19 @@
  */
 package hudson.plugins.cygpath;
 
-import hudson.LauncherDecorator;
 import hudson.Extension;
-import hudson.Launcher;
-import hudson.Proc;
 import hudson.FilePath;
-import hudson.util.IOException2;
-import hudson.remoting.Channel;
+import hudson.Launcher;
+import hudson.LauncherDecorator;
+import hudson.Proc;
 import hudson.model.Node;
+import hudson.remoting.Channel;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
-import java.util.Map;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /**
  * If we are on Windows, convert the path of the executable via Cygwin.
@@ -59,38 +54,10 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
             }
 
             public Proc launch(ProcStarter starter) throws IOException {
-                // TODO: fix them once the core exposes them as public methods
-                // TODO: Use ProcStarter.copy to make a copy before edit
-                List<String> cmds;
-                try {
-                    Field f = starter.getClass().getDeclaredField("commands");
-                    f.setAccessible(true);
-                    cmds = (List<String>)f.get(starter);
-
-                    starter.cmds(cygpath(cmds.toArray(new String[cmds.size()])));
-
-                    Method m = Launcher.class.getDeclaredMethod("launch", ProcStarter.class);
-                    m.setAccessible(true);
-                    return (Proc)m.invoke(base,starter);
-                } catch (NoSuchMethodException e) {
-                    throw new NoSuchMethodError(e.getMessage());
-                } catch (IllegalAccessException e) {
-                    throw new IllegalAccessError(e.getMessage());
-                } catch (InvocationTargetException e) {
-                    throw new IOException2(e);
-                } catch (NoSuchFieldException e) {
-                    throw new NoSuchFieldError(e.getMessage());
-                }
-            }
-
-            @Override
-            public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
-                return base.launch(cygpath(cmd),env,in,out,workDir);
-            }
-
-            @Override
-            public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
-                return base.launch(cygpath(cmd),mask,env,in,out,workDir);
+                starter = starter.copy();
+                List<String> cmds = starter.cmds();
+                starter.cmds(cygpath(cmds.toArray(new String[cmds.size()])));
+                return base.launch(starter);
             }
 
             @Override
@@ -107,7 +74,7 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                 try {
                     String exe = cmds[0];
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    if(base.launch(new String[]{"cygpath","-w",exe},new String[0],out,null).join()==0) {
+                    if(base.launch().cmds("cygpath","-w",exe).stdout(out).join()==0) {
                         // replace by the converted path
                         String cmd = out.toString().trim();
                         if(cmd.length()>0)
