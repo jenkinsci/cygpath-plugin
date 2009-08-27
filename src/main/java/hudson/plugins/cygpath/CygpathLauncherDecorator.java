@@ -30,6 +30,8 @@ import hudson.LauncherDecorator;
 import hudson.Proc;
 import hudson.model.Node;
 import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
+import hudson.remoting.Callable;
 import hudson.util.IOException2;
 import hudson.util.jna.JnaException;
 import hudson.util.jna.RegistryKey;
@@ -74,27 +76,11 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                 base.kill(modelEnvVars);
             }
 
-            /**
-             * Where is Cygwin installed?
-             */
-            private File getCygwinRoot() throws IOException {
-                try {
-                    RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/");
-                    try {
-                        return new File(key.getStringValue("native"));
-                    } finally {
-                        key.dispose();
-                    }
-                } catch (JnaException e) {
-                    throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",e);
-                }
-            }
-
             private String[] cygpath(String[] cmds) throws IOException {
                 try {
                     String exe = cmds[0];
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    if(base.launch().cmds(new File(getCygwinRoot(),"bin\\cygpath"),"-w",exe).stdout(out).join()==0) {
+                    if(base.launch().cmds(getCygpathExe(),"-w",exe).stdout(out).join()==0) {
                         // replace by the converted path
                         String cmd = out.toString().trim();
                         if(cmd.length()>0)
@@ -108,7 +94,34 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                 }
                 return cmds;
             }
+
+            private String getCygpathExe() throws IOException, InterruptedException {
+                VirtualChannel ch = base.getChannel();
+                if (ch==null)   return "cygpath";   // fall back
+                return ch.call(new GetCygpathTask());
+            }
         };
     }
 
+    /**
+     * Where is Cygwin installed?
+     */
+    private static class GetCygpathTask implements Callable<String,IOException> {
+        private File getCygwinRoot() throws IOException {
+            try {
+                RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/");
+                try {
+                    return new File(key.getStringValue("native"));
+                } finally {
+                    key.dispose();
+                }
+            } catch (JnaException e) {
+                throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",e);
+            }
+        }
+
+        public String call() throws IOException {
+            return new File(getCygwinRoot(),"bin\\cygpath").getPath();
+        }
+    }
 }
