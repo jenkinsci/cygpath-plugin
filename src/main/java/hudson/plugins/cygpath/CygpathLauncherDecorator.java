@@ -79,6 +79,9 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
             private String[] cygpath(String[] cmds) throws IOException {
                 try {
                     String exe = cmds[0];
+                    if (exe.indexOf('/')<0 && exe.indexOf('\\')<0)
+                        return cmds;    // if the executable is a single token, it'll be found in PATH. "cygpath -w" would append the current directory in front, which won't work.
+
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     if(base.launch().cmds(getCygpathExe(),"-w",exe).stdout(out).join()==0) {
                         // replace by the converted path
