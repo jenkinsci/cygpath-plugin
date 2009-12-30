@@ -14,4 +14,10 @@
   <name>Hudson Cygpath plugin</name>
   <description>Performs path conversion with cygpath</description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Cygpath+Plugin</url>
+  <developers>
+    <developer>
+      <id>kohsuke</id>
+      <name>Kohsuke Kawaguchi</name>
+    </developer>
+  </developers>
 </project>
