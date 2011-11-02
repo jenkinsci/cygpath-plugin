@@ -119,6 +119,11 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
                     key.dispose();
                 }
             } catch (JnaException e) {
+                // ok, let's try usual places...
+                File path = new File("C:\\cygwin");
+                if (path.exists())
+                    return path;
+
                 throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",e);
             }
         }
