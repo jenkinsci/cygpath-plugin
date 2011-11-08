@@ -111,7 +111,17 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
      */
     private static class GetCygpathTask implements Callable<String,IOException> {
         private File getCygwinRoot() throws IOException {
-            try {
+            try {// Cygwin 1.7
+                RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygwin\\setup");
+                try {
+                    return new File(key.getStringValue("rootdir"));
+                } finally {
+                    key.dispose();
+                }
+            } catch (JnaException e) {
+                // fall through
+            }
+            try {// Cygwin 1.5 (there's no Cygwin 1.6 ever released)
                 RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/");
                 try {
                     return new File(key.getStringValue("native"));
