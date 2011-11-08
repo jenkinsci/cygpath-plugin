@@ -111,26 +111,31 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
      */
     private static class GetCygpathTask implements Callable<String,IOException> {
         private File getCygwinRoot() throws IOException {
-            try {// Cygwin 1.7
-                RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygwin\\setup");
-                try {
-                    return new File(key.getStringValue("rootdir"));
-                } finally {
-                    key.dispose();
+            JnaException err=null;
+            for (String prefix : new String[]{"SOFTWARE\\Wow6432Node\\","SOFTWARE\\"}) {
+                try {// Cygwin 1.7
+                    RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(prefix+"Cygwin\\setup");
+                    try {
+                        return new File(key.getStringValue("rootdir"));
+                    } finally {
+                        key.dispose();
+                    }
+                } catch (JnaException e) {
+                    err = e; // fall through
                 }
-            } catch (JnaException e) {
-                // fall through
-            }
-            try {// Cygwin 1.5 (there's no Cygwin 1.6 ever released)
-                RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/");
-                try {
-                    return new File(key.getStringValue("native"));
-                } finally {
-                    key.dispose();
+                try {// Cygwin 1.5 (there's no Cygwin 1.6 ever released)
+                    RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(prefix+"Cygnus Solutions\\Cygwin\\mounts v2\\/");
+                    try {
+                        return new File(key.getStringValue("native"));
+                    } finally {
+                        key.dispose();
+                    }
+                } catch (JnaException e) {
+                    err = e; // fall through
                 }
-            } catch (JnaException e) {
-                throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",e);
             }
+
+            throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",err);
         }
 
         public String call() throws IOException {
