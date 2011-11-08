@@ -2,18 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
+    <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.318</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.418</version>
   </parent>
   
   <artifactId>cygpath</artifactId>
   <version>1.4-SNAPSHOT</version>
   <packaging>hpi</packaging>
-  <name>Hudson Cygpath plugin</name>
+  <name>Jenkins Cygpath plugin</name>
   <description>Performs path conversion with cygpath</description>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Cygpath+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Cygpath+Plugin</url>
   <developers>
     <developer>
       <id>kohsuke</id>
