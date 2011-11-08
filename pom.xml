@@ -8,7 +8,7 @@
   </parent>
   
   <artifactId>cygpath</artifactId>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.5</version>
   <packaging>hpi</packaging>
   <name>Jenkins Cygpath plugin</name>
   <description>Performs path conversion with cygpath</description>
