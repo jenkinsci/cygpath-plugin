@@ -4,9 +4,9 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.418</version>
+    <version>1.420</version>
   </parent>
-  
+
   <artifactId>cygpath</artifactId>
   <version>1.6-SNAPSHOT</version>
   <packaging>hpi</packaging>
@@ -21,9 +21,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/cygpath-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/cygpath-plugin.git</developerConnection>
-    <url>http://github.com/jenkinsci/cygpath-plugin</url>
+    <connection>scm:git:git://github.com/ushasm/cygpath-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:ushasm/cygpath-plugin.git</developerConnection>
+    <url>http://github.com/ushasm/cygpath-plugin</url>
   </scm>
 
     <repositories>
@@ -39,6 +39,4 @@
             <url>http://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-</project>  
-  
-
+</project>

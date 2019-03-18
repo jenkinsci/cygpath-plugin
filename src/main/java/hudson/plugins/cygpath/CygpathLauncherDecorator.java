@@ -43,6 +43,9 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * If we are on Windows, convert the path of the executable via Cygwin.
  *
@@ -60,10 +63,17 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
             }
 
             public Proc launch(ProcStarter starter) throws IOException {
-                starter = starter.copy();
-                List<String> cmds = starter.cmds();
-                starter.cmds(cygpath(cmds.toArray(new String[cmds.size()])));
-                return base.launch(starter);
+              try {
+                  starter = starter.copy();
+                  List<String> cmds = starter.cmds();
+                  starter.cmds(cygpath(cmds.toArray(new String[cmds.size()])));
+
+              } catch (IOException e) {
+                  LOGGER.log(Level.SEVERE, "Failed to launch Cygwin", e);
+              }
+
+              LOGGER.log(Level.INFO, "Launch Procedure Successful");
+              return base.launch(starter);
             }
 
             @Override
@@ -112,21 +122,12 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
     private static class GetCygpathTask implements Callable<String,IOException> {
         private File getCygwinRoot() throws IOException {
             JnaException err=null;
-            for (String prefix : new String[]{"SOFTWARE\\Wow6432Node\\","SOFTWARE\\"}) {
+            for (String prefix : new String[]{"SOFTWARE\\"}) {
                 try {// Cygwin 1.7
                     RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(prefix+"Cygwin\\setup");
+                    LOGGER.log(Level.INFO, "Found Registry key for Cygwin");
                     try {
                         return new File(key.getStringValue("rootdir"));
-                    } finally {
-                        key.dispose();
-                    }
-                } catch (JnaException e) {
-                    err = e; // fall through
-                }
-                try {// Cygwin 1.5 (there's no Cygwin 1.6 ever released)
-                    RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(prefix+"Cygnus Solutions\\Cygwin\\mounts v2\\/");
-                    try {
-                        return new File(key.getStringValue("native"));
                     } finally {
                         key.dispose();
                     }
@@ -142,4 +143,6 @@ public class CygpathLauncherDecorator extends LauncherDecorator {
             return new File(getCygwinRoot(),"bin\\cygpath").getPath();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CygpathLauncherDecorator.class.getName());
 }
